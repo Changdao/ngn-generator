@@ -1,0 +1,27 @@
+var {appModuleName} = angular.module('{appModuleName}', [
+    'ngRoute',
+    '{controllerModuleName}'
+]);
+
+
+{appModuleName}.config(['$routeProvider',
+    function($routeProvider) {
+        $routeProvider.
+            when('/', {
+                templateUrl: '/partials/{modelName}/list',
+                controller: '{modelListControllerName}'
+            }).
+            when('/new',{
+                templateUrl:'/partials/{modelName}/new',
+                controller:'{modelNewControllerName}'
+            }).
+            when('/:id',{
+                templateUrl:'/partials/{modelName}/detail',
+                controller:'{modelDetailControllerName}'
+            }).
+            otherwise({
+                redirectTo: '/'
+            });
+    }]);
+
+

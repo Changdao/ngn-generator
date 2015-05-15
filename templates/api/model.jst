@@ -1,0 +1,101 @@
+var ObjectID = require('mongodb').ObjectID;
+
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/{mongoDBName}');
+
+var {ModelName} = mongoose.model('{ModelName}', {properties});
+
+
+exports.index = function(req, res){
+    {ModelName}.find(function(err,objs){
+        if(err){
+            console.log(err);
+            res.status(401);
+            res.send('');
+        }
+        else
+            res.send(objs);
+    });
+};
+
+exports.get = function(req,res){
+    id = req.params['id'];
+
+    {ModelName}.findOne({_id:new ObjectID(id)},function(err,doc){
+        if(err)
+        {
+            console.log(err);
+            res.status(401);
+            res.send('');
+        }
+        else
+        {
+            res.send(doc);
+        }
+    });
+};
+
+exports.post = function(req,res){
+
+    _id= req.body["_id"];
+
+    if(_id &&(_id !== "")){
+        console.log("it's to update user:"+_id);
+        {ModelName}.find(_id,function(err,model){
+            if(err)
+            {
+                console.log(err);
+                res.status(401);
+                res.send('');
+            }
+            else
+            {
+                for(prop in req.body)model[prop]=req.body[prop];
+                model.save(function(err,doc){
+                    if(err){
+                        console.log(err);
+                        res.status(401);
+                        res.send('');
+                    }
+                    else
+                        res.send('{}');
+                });
+            }
+        });
+    }
+    else
+    {
+        model = new {ModelName}(req.body);
+        model.save(function(err,doc){
+            if(err)
+            {
+                console.log(err);
+                res.status(401);
+                res.send('');
+            }
+            else
+            {
+                res.send(model);
+            }
+        });
+    }
+};
+
+exports.delete = function(req,res){
+    id = req.params['id'];
+
+    {ModelName}.findOneAndRemove({_id:new ObjectID(id)},function(err,doc){
+        if(err)
+        {
+            console.log(err);
+            res.status(401);
+            res.send('');
+        }
+        else
+        {
+            res.send('{}');
+        }
+    });
+
+
+};

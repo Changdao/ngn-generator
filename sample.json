@@ -1,0 +1,11 @@
+{
+  "name":"hotel",
+  "properties":[
+    {"name":"name","type":"String"},
+    {"name":"address","type":"String"},
+    {"name":"latitude","type":"Number"},
+    {"name":"created","type":"Date"},
+    {"name":"email","type":"Email"}
+  ],
+  "pagination":true
+}

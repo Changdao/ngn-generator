@@ -1,0 +1,14 @@
+{
+  "name": "ngn-generator",
+  "version": "0.0.1",
+  "description": "A scaffold generator for model CRUD",
+  "homepage": "https://github.com/Changdao/ngn-generator",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Changdao/ngn-generator.git"
+  }, 
+  "dependencies": {
+   "q":"~1.x",
+    "commander":"~2.8.1"
+  }
+}

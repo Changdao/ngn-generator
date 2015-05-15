@@ -1,0 +1,9 @@
+'use strict';
+
+var {serviceName} = angular.module('{serviceName}',['ngResource']);
+
+{serviceName}.factory('{ModelName}',['$resource',function($resource){
+    return $resource('/api/{modelName}/:id',{},{
+        query:{method:'GET',params:{id:''},isArray:true}
+    });
+}]);

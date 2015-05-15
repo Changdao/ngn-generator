@@ -1,0 +1,89 @@
+var {controllerModuleName} = angular.module('{controllerModuleName}', ['{serviceName}','ui.bootstrap']);
+
+
+{controllerModuleName}.controller('{modelListControllerName}', function($scope,$http,$window,$location, {ModelName}) {
+    $scope.{modelCollectionName} = {ModelName}.query();
+
+    $scope.delete = function(obj){
+        obj.$remove({id:obj._id},function(){
+            $location.url('/{modelCollectionName}');
+        });
+    }
+
+});
+
+
+{controllerModuleName}.controller('{modelDetailControllerName}',function($scope,$http,$routeParams,$modal,$filter,{ModelName}){
+
+
+    $scope.{modelName} = {ModelName}.get({id:$routeParams.id});
+
+    $scope.dlgSaveSuccess = function (size) {
+
+        var modalInstance = $modal.open({
+            templateUrl: 'saveSuccess.html',
+            controller: 'ModalInstanceCtrl',
+            size: size,
+
+            resolve: {
+                items: function () {
+                    return $scope.items;
+                }
+            }
+        });
+
+        modalInstance.result;
+    };
+
+
+    $scope.save = function(){
+        $scope.{modelName}.$save(function(){
+            $scope.dlgSaveSuccess();
+        });
+    };
+
+});
+
+
+{controllerModuleName}.controller('ModalInstanceCtrl', function ($scope, $modalInstance, items) {
+
+    $scope.ok = function () {
+        $modalInstance.close();
+    };
+
+    $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+    };
+});
+
+{controllerModuleName}.controller('{modelNewControllerName}',function($scope,$location,$modal,{ModelName}){
+
+    $scope.{modelName} = new {ModelName}();
+
+    $scope.dlgSaveSuccess = function (size) {
+
+            var modalInstance = $modal.open({
+                templateUrl: 'saveSuccess.html',
+                controller: 'ModalInstanceCtrl',
+                size: size,
+
+                resolve: {
+                    items: function () {
+                        return $scope.items;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function(){
+                $location.url('/{modelCollectionName}');
+            });
+        };
+
+
+    $scope.save = function(){
+        $scope.{modelName}.$save(function(){
+            $scope.dlgSaveSuccess();
+        });
+    }
+});
+
