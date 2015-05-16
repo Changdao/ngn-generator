@@ -1,0 +1,13 @@
+{
+  "name":"student",
+  "properties":[
+    {"name":"firstName","type":"String"},
+    {"name":"lastName","type":"String"},
+    {"name":"address","type":"String"},
+    {"name":"age","type":"Number"},
+    {"name":"birth","type":"Date"},
+    {"name":"email","type":"Email"},
+    {"name":"phone","type":"String"}
+  ],
+  "pagination":true
+}

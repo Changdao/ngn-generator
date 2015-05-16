@@ -1,7 +1,5 @@
 var ObjectID = require('mongodb').ObjectID;
-
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/{mongoDBName}');
+var mongoose = require('./mongooseutil');
 
 var {ModelName} = mongoose.model('{ModelName}', {properties});
 

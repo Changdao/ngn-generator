@@ -1,5 +1,5 @@
 
-var hotel = require('./{modelName}');
+var {modelName} = require('./{modelName}');
 app.get('/{modelName}',{modelName}.index);
 app.post('/{modelName}',{modelName}.post);
 app.get('/{modelName}/:id',{modelName}.get);

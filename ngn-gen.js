@@ -10,10 +10,12 @@ var modelFile;
 var destPath;
 var prefix;
 var angularJSPath;
+var projectDB;
 
 program.version('0.0.1').arguments('ngn-gen.js <prefix> <modelFile> <destPath>')
     .action(function(pf,model,path){
         prefix = pf;
+        projectDB = pf+'DB';
         modelFile=model;
         destPath=path;
 
@@ -85,10 +87,9 @@ function createDir(dirs){
 //cp .bowerrc
 function updateBowerRC()
 {
-    content = '{
-  "directory": "public/bower_components"
-}
-';
+    content = '{\
+  "directory": "public/bower_components"\
+}';
     bowerrcpath = path.join(destPath,'.bowerrc');
     fs.writeFileSync(bowerrcpath,content);    
 }
@@ -106,14 +107,14 @@ function updatePackageJSON()
 
     pk = JSON.parse(pkjson);
 
-    for(property in depenencies)
+    for(property in dependencies)
     {
         if(dependencies.hasOwnProperty(property)){
             pk.dependencies[property]=dependencies[property];
         }
     }
 
-    fs.writeFileSync(pkpath,JSON.stringify(pk));
+    fs.writeFileSync(pkpath,JSON.stringify(pk,null,4));
 
 }
         //update bower.json
@@ -131,14 +132,16 @@ function updateBowerJSON(){
 
     br = JSON.parse(brjson);
 
-    for(property in depenencies)
+    br.dependencies=br.dependencies||{};
+
+    for(property in dependencies)
     {
         if(dependencies.hasOwnProperty(property)){
             br.dependencies[property]=dependencies[property];
         }
     }
 
-    fs.writeFileSync(brpath,JSON.stringify(br));
+    fs.writeFileSync(brpath,JSON.stringify(br,null,4));
 }
 
 
@@ -167,21 +170,158 @@ function appendOrReplace(path,str,beginMark,endMark)
 
 
     beginMarkPos=fileContent.indexOf(beginMark);
+    if(beginMarkPos>=0)
+    {
+        thePrevPart = fileContent.substring(0,beginMarkPos);
 
-    thePrevPart = fileContent.substring(0,beginMarkPos);
+        endMarkPos = fileContent.indexOf(endMark);
+        theLastPart = fileContent.substring(endMarkPos+endMark.length);
 
-    endMarkPos = fileContent.indexOf(endMark);
-    theLastPart = fileContent.substring(endMarkPos+endMark.length);
+        fs.truncateSync(path,0);
+        fs.appendFileSync(path, thePrevPart);
+        fs.appendFileSync(path,beginMark+'\n');
+        fs.appendFileSync(path,str);
+        fs.appendFileSync(path,endMark);
 
-    fs.truncateSync(path,0);
-    fs.appendFileSync(path, thePrevPart);
-    fs.appendFileSync(path,beginMark+'\n');
-    fs.appendFileSync(path,str);
-    fs.appendFileSync(path,endMark);
+        fs.appendFileSync(path, theLastPart);
+    }
+    else
+    {
+        fs.appendFileSync(path,'\n'+beginMark+'\n');
+        fs.appendFileSync(path,str);
+        fs.appendFileSync(path,'\n'+endMark+'\n');
+    }
 
-    fs.appendFileSync(path, theLastPart);
+}
 
 
+function insertOrAdd(path,str,pattern,beginMark,endMark)
+{
+    fileContent = fs.readFileSync(path,{encoding:"utf-8"});
+
+    beginMarkPos = fileContent.indexOf(beginMark);
+    if(beginMarkPos>=0)
+    {
+        endMarkPos = fileContent.indexOf(endMark);
+        if(endMarkPos<beginMarkPos)throw new Error('file cannot be modified automatic');
+        //get content part
+        contentPart = fileContent.substring(beginMarkPos,endMarkPos);
+        if(contentPart.indexOf(str)>=0)return;
+        //check exist str , if exist do nothing.
+
+        //insert str before endMark Pos
+        endMarkPos = fileContent.indexOf(endMark);
+        if(endMarkPos<beginMarkPos)throw new Error('file cannot be modified automatic');
+        thePrevPart = fileContent.substring(0,endMarkPos);
+        theLastPart = fileContent.substring(endMarkPos);
+
+        fs.truncateSync(path,0);
+        fs.appendFileSync(path, thePrevPart);
+        fs.appendFileSync(path,str);
+        fs.appendFileSync(path,'\n');
+        fs.appendFileSync(path,theLastPart);
+    }
+    else
+    {
+        patternPos = fileContent.indexOf(pattern);
+
+        thePrevPart = fileContent.substring(0,patternPos);
+        theLastPart = fileContent.substring(patternPos);
+
+        fs.truncateSync(path,0);
+        fs.appendFileSync(path, thePrevPart);
+        fs.appendFileSync(path,'\n'+beginMark+'\n');
+        fs.appendFileSync(path,str);
+        fs.appendFileSync(path,'\n'+endMark+'\n');
+
+        fs.appendFileSync(path, theLastPart);     
+    }
+
+
+}
+
+function insertBeforeOrReplace(path,str,pattern,beginMark,endMark)
+{
+   
+
+    fileContent = fs.readFileSync(path,{encoding:"utf-8"});
+
+
+    beginMarkPos=fileContent.indexOf(beginMark);
+
+    if(beginMarkPos>=0)
+    {
+        thePrevPart = fileContent.substring(0,beginMarkPos);
+
+        endMarkPos = fileContent.indexOf(endMark);
+        theLastPart = fileContent.substring(endMarkPos+endMark.length);
+
+        fs.truncateSync(path,0);
+        fs.appendFileSync(path, thePrevPart);
+        fs.appendFileSync(path,beginMark+'\n');
+        fs.appendFileSync(path,str);
+        fs.appendFileSync(path,endMark);
+
+        fs.appendFileSync(path, theLastPart); 
+    }
+    else
+    {
+        patternPos = fileContent.indexOf(pattern);
+
+        thePrevPart = fileContent.substring(0,patternPos);
+        theLastPart = fileContent.substring(patternPos);
+
+        fs.truncateSync(path,0);
+        fs.appendFileSync(path, thePrevPart);
+        fs.appendFileSync(path,'\n'+beginMark+'\n');
+        fs.appendFileSync(path,str);
+        fs.appendFileSync(path,'\n'+endMark+'\n');
+
+        fs.appendFileSync(path, theLastPart); 
+
+    }
+    
+}
+
+function insertAfterOrReplace(path,str,pattern,beginMark,endMark)
+{
+   
+
+    fileContent = fs.readFileSync(path,{encoding:"utf-8"});
+
+
+    beginMarkPos=fileContent.indexOf(beginMark);
+    if(beginMarkPos>=0)
+    {
+       thePrevPart = fileContent.substring(0,beginMarkPos);
+
+        endMarkPos = fileContent.indexOf(endMark);
+        theLastPart = fileContent.substring(endMarkPos+endMark.length);
+
+        fs.truncateSync(path,0);
+        fs.appendFileSync(path, thePrevPart);
+        fs.appendFileSync(path,beginMark+'\n');
+        fs.appendFileSync(path,str);
+        fs.appendFileSync(path,endMark);
+
+        fs.appendFileSync(path, theLastPart); 
+    }
+    else
+    {
+        patternPos = fileContent.indexOf(pattern);
+        thePrevPart = fileContent.substring(0,patternPos+pattern.length);
+        theLastPart = fileContent.substring(patternPos+pattern.length);
+
+        fs.truncateSync(path,0);
+        fs.appendFileSync(path, thePrevPart);
+        fs.appendFileSync(path,'\n'+beginMark+'\n');
+        fs.appendFileSync(path,str);
+        fs.appendFileSync(path,'\n'+endMark+'\n');
+
+        fs.appendFileSync(path, theLastPart); 
+
+    }
+    
 }
 
 
@@ -313,6 +453,52 @@ var ngnGenerate = function(){
         createPartialDir(model.name);
         write(listPartialPath, listView);
     }
+
+    function updateAppJS(angularModelName) {
+        appJSPath = path.join(destPath, 'app.js');
+        //todo
+        i18nPart = "i18n.expressBind(app, {\n\
+    // setup some locales - other locales default to vi silently\n\
+    locales: ['en', 'zh'],\n\
+    // set the default locale\n\
+    defaultLocale: 'en',\n\
+    // set the cookie name\n\
+    cookieName: 'locale'});\n\
+// set up the middleware\n\
+app.use(function(req, res, next) {\n\
+    //req.i18n.setLocaleFromQuery();\n\
+    req.i18n.setLocale(req.i18n.preferredLocale(req));\n\
+    next();\n\
+});\n";
+
+        insertAfterOrReplace(appJSPath, i18nPart, "app.use(express.static(path.join(__dirname, 'public')));", '//--NGN-BEGIN i18n-2', '//--NGN-END i18n-2');
+
+        usePart = "app.use('/partials',partials);\n\
+app.use('/api',api);\n";
+        usePart = usePart.replace(/\{modelName\}/g, angularModelName);
+        insertBeforeOrReplace(appJSPath, usePart, '// catch 404 and forward to error handler', '//--NGN-BEGIN use', '//--NGN-END use');
+
+        useModelPart = "app.use('/{modelName}',{modelName});\n";
+        useModelPart = useModelPart.replace(/\{modelName\}/g, angularModelName);
+
+        insertOrAdd(appJSPath, useModelPart, '// catch 404 and forward to error handler', '//--NGN-BEGIN modeluse', '//--NGN-END modeluse');
+
+
+        var requirePart = "var i18n = require('i18n-2');\n\
+var partials = require('./routes/partials');\n\
+var api = require('./routes/api/index');\n\
+";
+        requirePart = requirePart.replace(/\{modelName\}/g, angularModelName);
+
+        insertBeforeOrReplace(appJSPath, requirePart, 'var app = express();', '//--NGN-BEGIN require', '//--NGN-END require');
+
+
+        var modelRequirePart = "var {modelName} = require('./routes/{modelName}');\n";
+
+        modelRequirePart = modelRequirePart.replace(/\{modelName\}/g, angularModelName);
+        insertOrAdd(appJSPath, modelRequirePart, 'var app = express();', '//--NGN-BEGIN modelrequire', '//--NGN-END modelrequire');
+    }
+
     function generate(data){
         model = JSON.parse(data);
 
@@ -347,7 +533,7 @@ var ngnGenerate = function(){
         //write api/modelName.js
         var restAPI = loadTemplate('api','model.jst');
         restAPI=restAPI.replace(/\{ModelName\}/g,angularModelClassName);
-        restAPI=restAPI.replace(/\{mongoDBName\}/g,prefix+'DB');
+        restAPI=restAPI.replace(/\{mongoDBName\}/g,projectDB);
         restAPIProperties ='{';
         for(i=0;i<model.properties.length;i++)
         {
@@ -360,6 +546,12 @@ var ngnGenerate = function(){
         restAPIPath= path.join(destPath,'routes','api',model.name+'.js');
         createDir(['routes','api']);
         write(restAPIPath,restAPI);
+
+        //add mongooseutil to api/.
+        mongooseutil = loadTemplate('api','mongooseutil.jst');
+        mongooseutil = mongooseutil.replace('{projectDB}',projectDB);
+        mongooseutilPath = path.join(destPath,'routes','api','mongooseutil.js');
+        write(mongooseutilPath,mongooseutil);
 
         //modify api/index.js
         modelIndexPart=loadTemplate('api','index.jst');
@@ -387,13 +579,8 @@ var ngnGenerate = function(){
         partialsPath = path.join(destPath,'routes','partials.js');
         write(partialsPath,partialsRoute);
 
-
         //modify app.js
-        appJSPath= path.join(destPath,'app.js');
-        //todo
-        insertOrReplace(appJSPath,i18nPart,'','//--NGN-BEGIN i18n-2','//--NGN-END i18n-2');
-        insertOrReplace(appJSPath,useParth,'','//--NGN-BEGIN use','//--NGN-END use');
-        insertOrReplace(appJSPath,requirePart,'','//--NGN-BEGIN require','//--NGN-END require');
+        updateAppJS(angularModelName);
 
         //todo
         //cp .bowerrc
