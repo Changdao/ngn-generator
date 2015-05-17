@@ -405,6 +405,28 @@ var ngnGenerate = function(){
         write(routePath, routeJS);
     }
 
+    function generateDetailPartialView(angularModelClassName, angularModelName){
+        var newView = loadTemplate('view', 'detail.ejs');
+
+        newView = newView.replace(/\{ModelName\}/g,angularModelClassName);
+        newView = newView.replace(/\{modelName\}/g,angularModelName);
+
+        var newFields = '';
+        for (i = 0; i < model.properties.length; i++) {
+            property = model.properties[i];
+            field = '<div class="form-group">';
+            field = field + '<label><%= __("' + angularModelClassName + '.' + property.name + '") %></label>\n';
+            angularType = typeMap.mapAngular(property.type);
+            field = field + '<input type="'+angularType+'" class="form-control" ng-model="' + angularModelName + '.' + property.name + '">\n';
+            field = field + '</div>\n';
+            newFields = newFields + field;
+        }
+
+        newView = newView.replace('{fields}', newFields);
+        newPartialPath = path.join(destPath, 'views', 'partials', angularModelName, 'detail.ejs');
+        write(newPartialPath, newView);
+    }
+
     function generateNewPartialView(angularModelClassName, angularModelName) {
         var newView = loadTemplate('view', 'new.ejs');
 
@@ -439,7 +461,16 @@ var ngnGenerate = function(){
                 th = '<th><%= __("' + angularModelClassName + '.' + property.name + '")%></th>\n';
                 listTableHeader = listTableHeader + th;
 
-                td = '<td>{{' + angularModelName + '.' + property.name + '}}</td>\n';
+                //first as link to detail
+                if(i==0){
+                    td = '<td><a href="#/{{'+angularModelName+'._id}}">{{' + angularModelName + '.' + property.name + '}}</a></td>\n';
+                }
+                else
+                {
+                    td = '<td>{{' + angularModelName + '.' + property.name + '}}</td>\n';
+                }
+
+
                 listTableBody = listTableBody + td;
             }
 
@@ -565,8 +596,9 @@ var api = require('./routes/api/index');\n\
         //write views/partials/model/new.ejs
         generateNewPartialView(angularModelClassName, angularModelName);
 
-        //write views/partials/model/edit.ejs
+        //write views/partials/model/detail.ejs
 
+        generateDetailPartialView(angularModelClassName,angularModelName);
 
         //write views/model.ejs
         generateMainView(ngAppModule, angularModelName);

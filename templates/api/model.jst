@@ -39,7 +39,7 @@ exports.post = function(req,res){
 
     if(_id &&(_id !== "")){
         console.log("it's to update user:"+_id);
-        {ModelName}.find(_id,function(err,model){
+        {ModelName}.findOne({_id:new ObjectID(_id)},function(err,model){
             if(err)
             {
                 console.log(err);

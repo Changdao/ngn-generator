@@ -1,4 +1,4 @@
-var types = {'String':{JS:'String',angular:'text'},'Number':{JS:'Number',angular:'number'},'Date':{JS:'Date',angular:'date'},'Email':{JS:'String',angular:'email'}};
+var types = {'String':{JS:'String',angular:'text'},'Number':{JS:'Number',angular:'number'},'Date':{JS:'Date',angular:'datetime'},'Email':{JS:'String',angular:'email'}};
 TypeMap = function(){
     this.mapJS = function(type){
         if(!type)return('String');

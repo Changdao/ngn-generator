@@ -13,7 +13,7 @@ var {controllerModuleName} = angular.module('{controllerModuleName}', ['{service
 });
 
 
-{controllerModuleName}.controller('{modelDetailControllerName}',function($scope,$http,$routeParams,$modal,$filter,{ModelName}){
+{controllerModuleName}.controller('{modelDetailControllerName}',function($scope,$routeParams,$modal,$location,{ModelName}){
 
 
     $scope.{modelName} = {ModelName}.get({id:$routeParams.id});
@@ -32,9 +32,10 @@ var {controllerModuleName} = angular.module('{controllerModuleName}', ['{service
             }
         });
 
-        modalInstance.result;
-    };
-
+        modalInstance.result.then(function(){
+              $location.url('/');
+        });
+    }
 
     $scope.save = function(){
         $scope.{modelName}.$save(function(){

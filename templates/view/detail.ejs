@@ -1,0 +1,26 @@
+<div class="row">
+    <div class="col-lg-1">
+    </div>
+    <div class="col-lg-6">
+        <form role="form" novalidate>
+            {fields}
+
+            <button ng-click="save()" class="btn btn-default"><%= __("save") %></button>
+            <button type="reset" class="btn btn-default"><%= __("reset") %></button>
+        </form>
+    </div>
+
+    <!-- /.col-lg-6 (nested) -->
+</div>
+
+<script type="text/ng-template" id="saveSuccess.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Save {ModelName} success!</h3>
+    </div>
+    <div class="modal-body">
+        <span>The {modelName} has been saved!</span>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-warning" ng-click="ok()">Close</button>
+    </div>
+</script>
