@@ -1,4 +1,7 @@
-var types = {'String':{JS:'String',angular:'text'},'Number':{JS:'Number',angular:'number'},'Date':{JS:'Date',angular:'datetime'},'Email':{JS:'String',angular:'email'}};
+var types = {'String':{JS:'String',angular:'text',sequelize:'Sequelize.STRING'},
+            'Number':{JS:'Number',angular:'number',sequelize:'Sequelize.FLOAT'},
+            'Date':{JS:'Date',angular:'date',sequelize:'Sequelize.DATE'},
+            'Email':{JS:'String',angular:'email',sequelize:'Sequelize.STRING'}};
 TypeMap = function(){
     this.mapJS = function(type){
         if(!type)return('String');
@@ -11,6 +14,12 @@ TypeMap = function(){
         r = types[type];
         if(r)return r.angular;
         else return "text";
+    };
+    this.mapSequelize = function(type){
+        if(!type)return "Sequelize.STRING";
+        r = types[type];
+        if(r)return r.sequelize;
+        else return 'Sequelize.STRING';
     }
 
 };

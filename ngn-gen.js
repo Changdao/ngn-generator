@@ -83,7 +83,6 @@ function createDir(dirs){
     }
 }
 
-
 //cp .bowerrc
 function updateBowerRC()
 {
@@ -93,14 +92,16 @@ function updateBowerRC()
     bowerrcpath = path.join(destPath,'.bowerrc');
     fs.writeFileSync(bowerrcpath,content);    
 }
-        //update package.json
+//update package.json
 function updatePackageJSON()
 {
     dependencies = {
         "ejs": "^2.3.1",
         "i18n-2": "^0.4.6",
         "mongodb": "^2.0.31",
-        "mongoose": "^4.0.3"
+        "mongoose": "^4.0.3",
+        "moment": "~2.10.3",
+        "sequelize":"~3.0.0"
     };
     pkpath = path.join(destPath,'package.json');
     pkjson = fs.readFileSync(pkpath,{encoding:"utf-8"});
@@ -242,10 +243,8 @@ function insertOrAdd(path,str,pattern,beginMark,endMark)
 
 function insertBeforeOrReplace(path,str,pattern,beginMark,endMark)
 {
-   
 
     fileContent = fs.readFileSync(path,{encoding:"utf-8"});
-
 
     beginMarkPos=fileContent.indexOf(beginMark);
 
@@ -267,28 +266,21 @@ function insertBeforeOrReplace(path,str,pattern,beginMark,endMark)
     else
     {
         patternPos = fileContent.indexOf(pattern);
-
         thePrevPart = fileContent.substring(0,patternPos);
         theLastPart = fileContent.substring(patternPos);
-
         fs.truncateSync(path,0);
         fs.appendFileSync(path, thePrevPart);
         fs.appendFileSync(path,'\n'+beginMark+'\n');
         fs.appendFileSync(path,str);
         fs.appendFileSync(path,'\n'+endMark+'\n');
-
-        fs.appendFileSync(path, theLastPart); 
-
+        fs.appendFileSync(path, theLastPart);
     }
-    
 }
 
 function insertAfterOrReplace(path,str,pattern,beginMark,endMark)
 {
-   
 
     fileContent = fs.readFileSync(path,{encoding:"utf-8"});
-
 
     beginMarkPos=fileContent.indexOf(beginMark);
     if(beginMarkPos>=0)
@@ -318,10 +310,8 @@ function insertAfterOrReplace(path,str,pattern,beginMark,endMark)
         fs.appendFileSync(path,str);
         fs.appendFileSync(path,'\n'+endMark+'\n');
 
-        fs.appendFileSync(path, theLastPart); 
-
+        fs.appendFileSync(path, theLastPart);
     }
-    
 }
 
 
@@ -386,6 +376,17 @@ var ngnGenerate = function(){
         angularServicePath = path.join(destPath, 'public', angularServiceRelativePath);
         write(angularServicePath, service);
     }
+
+    //function generateNGServiceSequelize(angularServiceName, angularModelClassName, angularModelName){
+    //    var service = loadJSTemplate('service_sequelize.jst');
+    //    service = service.replace(/\{serviceName\}/g, angularServiceName);
+    //    service = service.replace(/\{ModelName\}/g, angularModelClassName);
+    //    service = service.replace(/\{modelName\}/g, angularModelName);
+    //    angularServiceRelativePath = path.join('js', prefix + angularModelName + 'services.js');
+    //    angularServicePath = path.join(destPath, 'public', angularServiceRelativePath);
+    //    write(angularServicePath, service);
+    //}
+
 
     function generateMainView(ngAppModule, angularModelName) {
         var mainView = loadTemplate('view', 'view.ejs');
@@ -562,14 +563,15 @@ var api = require('./routes/api/index');\n\
 
 
         //write api/modelName.js
-        var restAPI = loadTemplate('api','model.jst');
+        var restAPI = loadTemplate('api','model_sequelize.jst');
         restAPI=restAPI.replace(/\{ModelName\}/g,angularModelClassName);
+        restAPI = restAPI.replace(/\{modelName\}/g, angularModelName);
         restAPI=restAPI.replace(/\{mongoDBName\}/g,projectDB);
         restAPIProperties ='{';
         for(i=0;i<model.properties.length;i++)
         {
             property = model.properties[i];
-            restAPIProperties+=property.name+':'+typeMap.mapJS(property.type)
+            restAPIProperties+=property.name+':{type:'+typeMap.mapSequelize(property.type)+',field:"'+property.name+'"}'
             if(i<model.properties.length-1)restAPIProperties+=',\n';
         }
         restAPIProperties+='}';
@@ -578,11 +580,18 @@ var api = require('./routes/api/index');\n\
         createDir(['routes','api']);
         write(restAPIPath,restAPI);
 
+
+        sequelizeUtil = loadTemplate('api','sequelizeutil.jst');
+
+        sequelizeUtil = sequelizeUtil.replace('{projectDB}',prefix);
+        sequelizeutilPath = path.join(destPath,'routes','api','sequelizeutil.js');
+        write(sequelizeutilPath,sequelizeUtil);
+
         //add mongooseutil to api/.
-        mongooseutil = loadTemplate('api','mongooseutil.jst');
-        mongooseutil = mongooseutil.replace('{projectDB}',projectDB);
-        mongooseutilPath = path.join(destPath,'routes','api','mongooseutil.js');
-        write(mongooseutilPath,mongooseutil);
+        //mongooseutil = loadTemplate('api','mongooseutil.jst');
+        //mongooseutil = mongooseutil.replace('{projectDB}',projectDB);
+        //mongooseutilPath = path.join(destPath,'routes','api','mongooseutil.js');
+        //write(mongooseutilPath,mongooseutil);
 
         //modify api/index.js
         modelIndexPart=loadTemplate('api','index.jst');
