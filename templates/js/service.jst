@@ -3,7 +3,18 @@
 var {serviceName} = angular.module('{serviceName}',['ngResource']);
 
 {serviceName}.factory('{ModelName}',['$resource',function($resource){
-    return $resource('/api/{modelName}/:id',{},{
-        query:{method:'GET',params:{id:''},isArray:true}
-    });
+
+    var {ModelName} = $resource('/api/{modelName}/:id',{},{
+            query:{method:'GET',params:{id:''},isArray:true}
+        });
+
+        var protoGet = {ModelName}.get;
+        {ModelName}.get = function(params){
+            var result =  protoGet(params);
+            result.$promise.then(function(){
+                {fieldsTransform}
+            });
+            return result;
+        };
+        return {ModelName};
 }]);

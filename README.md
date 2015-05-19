@@ -68,7 +68,7 @@ Then open your browser and goto: http://localhost:3000/hotel
 * Refactoring for more OO, especially about Persistence Layer choices.
 * To support more config parameters
 * Implementing pagination.
-* 
+*
 
 
 

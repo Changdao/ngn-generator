@@ -12,6 +12,8 @@ var prefix;
 var angularJSPath;
 var projectDB;
 
+var persistence='Sequelize';
+
 program.version('0.0.1').arguments('ngn-gen.js <prefix> <modelFile> <destPath>')
     .action(function(pf,model,path){
         prefix = pf;
@@ -372,6 +374,19 @@ var ngnGenerate = function(){
         service = service.replace(/\{serviceName\}/g, angularServiceName);
         service = service.replace(/\{ModelName\}/g, angularModelClassName);
         service = service.replace(/\{modelName\}/g, angularModelName);
+
+
+        var fieldsTransform = '';
+        for (i = 0; i < model.properties.length; i++) {
+            property = model.properties[i];
+            angularType = typeMap.mapAngular(property.type);
+            if(angularType == "date")
+            {
+                ft = 'result.'+property.name +' = new Date(result.'+property.name+');\n';
+                fieldsTransform = fieldsTransform +ft;
+            }
+        }
+        service = service.replace(/\{fieldsTransform\}/g,fieldsTransform);
         angularServiceRelativePath = path.join('js', prefix + angularModelName + 'services.js');
         angularServicePath = path.join(destPath, 'public', angularServiceRelativePath);
         write(angularServicePath, service);
@@ -464,7 +479,10 @@ var ngnGenerate = function(){
 
                 //first as link to detail
                 if(i==0){
-                    td = '<td><a href="#/{{'+angularModelName+'._id}}">{{' + angularModelName + '.' + property.name + '}}</a></td>\n';
+                    if(persistence=="Sequelize")
+                    td = '<td><a href="#/{{'+angularModelName+'.id}}">{{' + angularModelName + '.' + property.name + '}}</a></td>\n';
+                    else
+                        td = '<td><a href="#/{{'+angularModelName+'._id}}">{{' + angularModelName + '.' + property.name + '}}</a></td>\n';
                 }
                 else
                 {
@@ -580,18 +598,24 @@ var api = require('./routes/api/index');\n\
         createDir(['routes','api']);
         write(restAPIPath,restAPI);
 
+        if(persistence=="Sequelize")
+        {
+            sequelizeUtil = loadTemplate('api','sequelizeutil.jst');
 
-        sequelizeUtil = loadTemplate('api','sequelizeutil.jst');
+            sequelizeUtil = sequelizeUtil.replace('{projectDB}',prefix);
+            sequelizeutilPath = path.join(destPath,'routes','api','sequelizeutil.js');
+            write(sequelizeutilPath,sequelizeUtil);
+        }
+        else{
+            //add mongooseutil to api/.
+            mongooseutil = loadTemplate('api','mongooseutil.jst');
+            mongooseutil = mongooseutil.replace('{projectDB}',projectDB);
+            mongooseutilPath = path.join(destPath,'routes','api','mongooseutil.js');
+            write(mongooseutilPath,mongooseutil);
+        }
 
-        sequelizeUtil = sequelizeUtil.replace('{projectDB}',prefix);
-        sequelizeutilPath = path.join(destPath,'routes','api','sequelizeutil.js');
-        write(sequelizeutilPath,sequelizeUtil);
 
-        //add mongooseutil to api/.
-        //mongooseutil = loadTemplate('api','mongooseutil.jst');
-        //mongooseutil = mongooseutil.replace('{projectDB}',projectDB);
-        //mongooseutilPath = path.join(destPath,'routes','api','mongooseutil.js');
-        //write(mongooseutilPath,mongooseutil);
+
 
         //modify api/index.js
         modelIndexPart=loadTemplate('api','index.jst');

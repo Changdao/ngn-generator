@@ -7,7 +7,7 @@ var {ModelName} = sequelize.define('{modelName}',{properties},{
    freezeTableName: true // Model tableName will be the same as the model name
  });
 
-{ModelName}.sync({force: true});
+{ModelName}.sync({force:false});
 
 exports.index = function(req, res){
     {ModelName}.findAll().then(function(objs){
@@ -33,7 +33,9 @@ exports.post = function(req,res){
     if(_id &&(_id !== "")){
         console.log("it's to update user:"+_id);
         {ModelName}.findById(_id).then(function(obj){
-            if(obj)obj.update(req.body);
+            if(obj)obj.update(req.body).then(function(obj){
+                res.send('{}');
+            });
         });
     }
     else
